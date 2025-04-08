@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      ACTIONS_RUNNER_DEBUG: true
+      ACTIONS_STEP_DEBUG: true
 
     steps:
     - name: Checkout source
@@ -46,10 +49,12 @@ jobs:
 
         ninja
 
-     - name: Inspect build output
-       run: |
-         ls -lh build-android/src/app/
-         file build-android/src/app/libtor.so || echo "libtor.so not found"   
+    - name: Show build output
+      run: |
+        echo "::group::Built Files"
+        ls -lh build-android/src/app/
+        file build-android/src/app/libtor.so || echo "libtor.so not found"
+        echo "::endgroup::"
 
 #    - name: Upload libtor.so
 #      uses: actions/upload-artifact@e3ae318f8b8f18792cd2369c37ee39e9f3f0f237
