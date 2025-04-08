@@ -33,6 +33,7 @@ jobs:
       run: |
         git clone https://github.com/guardianproject/tor.git tor-android
         cd tor-android
+        git submodule update --init --recursive
         mkdir -p build-android
         ls -lh
 
@@ -49,10 +50,21 @@ jobs:
         export PATH=$ANDROID_NDK_HOME:$PATH
 
         cd tor-android
-        $ANDROID_NDK_HOME/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk NDK_APPLICATION_MK=Application.mk APP_ABI=arm64-v8a
+        $ANDROID_NDK_HOME/ndk-build NDK_PROJECT_PATH=. \
+          APP_BUILD_SCRIPT=Android.mk \
+          NDK_APPLICATION_MK=Application.mk \
+          APP_ABI=arm64-v8a \
+          APP_PLATFORM=android-21
 
     - name: Show build output
       run: |
         echo "::group::Built Files"
         find tor-android -name "libtor.so" || echo "libtor.so not found"
         echo "::endgroup::"
+
+    - name: Upload libtor.so artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: libtor
+        path: |
+          tor-android/obj/local/arm64-v8a/libtor.so
