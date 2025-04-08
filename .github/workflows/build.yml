@@ -35,6 +35,14 @@ jobs:
         cd tor-clean
         git checkout release-0.4.7
         mkdir build-android
+        ls -lh  # Verify contents of tor-clean
+
+    - name: Verify CMakeLists.txt presence
+      run: |
+        if [ ! -f tor-clean/CMakeLists.txt ]; then
+          echo "CMakeLists.txt not found in tor-clean"
+          exit 1
+        fi
 
     - name: Configure and build libtor.so
       run: |
