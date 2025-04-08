@@ -1,0 +1,70 @@
+name: Build libtor.so for Android
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      ACTIONS_RUNNER_DEBUG: true
+      ACTIONS_STEP_DEBUG: true
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+
+    - name: Set up environment
+      run: |
+        set -x
+        sudo apt update
+        sudo apt install -y curl unzip ninja-build cmake build-essential
+
+    - name: Download Android NDK r25b
+      run: |
+        mkdir -p $HOME/android
+        cd $HOME/android
+        curl -LO https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
+        unzip -q android-ndk-r25b-linux.zip
+        mv android-ndk-r25b ndk
+
+    - name: Clone and prepare Tor source
+      run: |
+        git clone https://github.com/guardianproject/tor.git tor-android
+        cd tor-android
+        git submodule update --init --recursive
+        mkdir -p build-android
+        ls -lh
+
+    - name: Verify Android.mk presence
+      run: |
+        if [ ! -f tor-android/Android.mk ]; then
+          echo "Android.mk not found in tor-android"
+          exit 1
+        fi
+
+    - name: Configure and build libtor.so
+      run: |
+        export ANDROID_NDK_HOME=$HOME/android/ndk
+        export PATH=$ANDROID_NDK_HOME:$PATH
+
+        cd tor-android
+        $ANDROID_NDK_HOME/ndk-build NDK_PROJECT_PATH=. \
+          APP_BUILD_SCRIPT=Android.mk \
+          NDK_APPLICATION_MK=Application.mk \
+          APP_ABI=arm64-v8a \
+          APP_PLATFORM=android-21
+
+    - name: Show build output
+      run: |
+        echo "::group::Built Files"
+        find tor-android -name "libtor.so" || echo "libtor.so not found"
+        echo "::endgroup::"
+
+    - name: Upload libtor.so artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: libtor
+        path: |
+          tor-android/obj/local/arm64-v8a/libtor.so
