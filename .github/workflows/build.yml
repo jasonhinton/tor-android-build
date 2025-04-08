@@ -46,8 +46,13 @@ jobs:
 
         ninja
 
-    - name: Upload libtor.so
-      uses: actions/upload-artifact@e3ae318f8b8f18792cd2369c37ee39e9f3f0f237
-      with:
-        name: libtor-android
-        path: build-android/src/app/libtor.so
+     - name: Inspect build output
+       run: |
+         ls -lh build-android/src/app/
+         file build-android/src/app/libtor.so || echo "libtor.so not found"   
+
+#    - name: Upload libtor.so
+#      uses: actions/upload-artifact@e3ae318f8b8f18792cd2369c37ee39e9f3f0f237
+#      with:
+#        name: libtor-android
+#        path: build-android/src/app/libtor.so
