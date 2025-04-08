@@ -29,7 +29,14 @@ jobs:
         unzip -q android-ndk-r25b-linux.zip
         mv android-ndk-r25b ndk
 
-    - name: Configure & build Tor
+    - name: Clone and prepare Tor source
+      run: |
+        git clone https://github.com/torproject/tor.git tor-clean
+        cd tor-clean
+        git checkout release-0.4.7
+        mkdir build-android
+
+    - name: Configure and build libtor.so
       run: |
         export ANDROID_NDK_HOME=$HOME/android/ndk
         export PATH=$ANDROID_NDK_HOME:$PATH
@@ -37,8 +44,7 @@ jobs:
         export CC=$TOOLCHAIN/bin/aarch64-linux-android21-clang
         export CXX=$TOOLCHAIN/bin/aarch64-linux-android21-clang++
 
-        mkdir build-android
-        cd build-android
+        cd tor-clean/build-android
 
         cmake .. \
           -G Ninja \
@@ -52,12 +58,6 @@ jobs:
     - name: Show build output
       run: |
         echo "::group::Built Files"
-        ls -lh build-android/src/app/
-        file build-android/src/app/libtor.so || echo "libtor.so not found"
+        ls -lh tor-clean/build-android/src/app/ || echo "Build output not found"
+        find tor-clean/build-android -name "libtor.so" || echo "libtor.so not found"
         echo "::endgroup::"
-
-#    - name: Upload libtor.so
-#      uses: actions/upload-artifact@e3ae318f8b8f18792cd2369c37ee39e9f3f0f237
-#      with:
-#        name: libtor-android
-#        path: build-android/src/app/libtor.so
