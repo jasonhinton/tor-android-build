@@ -47,7 +47,7 @@ jobs:
         ninja
 
     - name: Upload libtor.so
-      uses: actions/upload-artifact@f2135fef376f5b34e6d25126d49a4e7d3943e4fd
+      uses: actions/upload-artifact@e3ae318f8b8f18792cd2369c37ee39e9f3f0f237
       with:
         name: libtor-android
         path: build-android/src/app/libtor.so
